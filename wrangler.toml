@@ -1,4 +1,4 @@
-name = "destru"
+name = "backend"
 main = "build/worker/shim.mjs"
 compatibility_date = "2025-03-23"
 
