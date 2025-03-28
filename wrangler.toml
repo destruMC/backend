@@ -4,3 +4,15 @@ compatibility_date = "2025-03-23"
 
 [build]
 command = "cargo install -q worker-build && worker-build --release"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+CLIENT_ID = "Iv23lixKBOnZXlT0bsL7"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "destru"
+database_id = "b22ad309-0b5b-4f6f-b0ff-0950c0088408"

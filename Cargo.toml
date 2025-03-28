@@ -1,6 +1,6 @@
 [package]
 name = "destru"
-version = "1.9.0"
+version = "2.0.0"
 edition = "2024"
 authors = [ "KKW557 <557@destru.org>" ]
 
@@ -15,8 +15,8 @@ wasm-opt = false
 crate-type = ["cdylib"]
 
 [dependencies]
-worker = { version="0.5", features=['http', 'axum'] }
-worker-macros = { version="0.5", features=['http'] }
-axum  = { version = "0.7", default-features = false }
-tower-service = "0.3"
+worker = { version="0.5", features=['http', 'axum', 'd1'] }
 console_error_panic_hook = { version = "0.1" }
+serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.12", features = ["json"] }
+serde_json = "1.0"
