@@ -18,7 +18,7 @@ const USER_URL: &str = r"https://api.github.com/user";
 const TOKEN_URL: &str = r"https://api.github.com/app/installations/{}/access_tokens";
 const GRAPHQL_URL: &str = r"https://api.github.com/graphql";
 
-const STRUCTURES_QUERY: &str = r#"query($size: Int!, $cursor: String) { repository(owner: "destruMC", name: "repo") { discussions(categoryId: "DIC_kwDOOaAG2c4CpHpp", first: $size, after: $cursor) { nodes { number title body author { login avatarUrl } } pageInfo { hasNextPage endCursor } } } }"#;
+const STRUCTURES_QUERY: &str = r#"query($size: Int!, $cursor: String) { repository(owner: "destruMC", name: "repo") { discussions(categoryId: "DIC_kwDOObsL9c4CpOgI", first: $size, after: $cursor) { nodes { number title body author { login avatarUrl } } pageInfo { hasNextPage endCursor } } } }"#;
 const STRUCTURE_QUERY: &str = r#"query($number: Int!) { repository(owner: "destruMC", name: "repo") { discussion(number: $number) { title body author { login avatarUrl } } } }"#;
 
 #[derive(Serialize)]
