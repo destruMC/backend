@@ -555,8 +555,8 @@ fn decode_sqids(flag: u8, str: &str) -> Option<i64> {
 fn extract_body(json: &serde_json::Value) -> Option<Body> {
     let body = json["body"]
         .as_str()?
-        .strip_prefix("[](")?
-        .strip_suffix(")")?;
+        .strip_prefix("<!--")?
+        .strip_suffix("-->")?;
 
     serde_json::from_str::<Body>(body).ok()
 }
