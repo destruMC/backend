@@ -1,22 +1,26 @@
 [package]
 name = "destru"
-version = "2.0.0"
+version = "2.1.0"
 edition = "2024"
 authors = [ "KKW557 <557@destru.org>" ]
 
 [package.metadata.release]
-release = false
+release = true
 
 # https://github.com/rustwasm/wasm-pack/issues/1247
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = false
+wasm-opt = true
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-worker = { version="0.5", features=['http', 'axum', 'd1'] }
-console_error_panic_hook = { version = "0.1" }
+worker = { version="0.5", features = ["http"] }
+console_error_panic_hook = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 reqwest = { version = "0.12", features = ["json"] }
 serde_json = "1.0"
+aes-gcm = { version = "0.10", features = ["alloc", "rand_core"]}
+jwt-simple = "0.12"
+sqids = "0.4"
+base64 = "0.22"

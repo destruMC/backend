@@ -10,9 +10,5 @@ enabled = true
 head_sampling_rate = 1
 
 [vars]
-CLIENT_ID = "Iv23lixKBOnZXlT0bsL7"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "destru"
-database_id = "b22ad309-0b5b-4f6f-b0ff-0950c0088408"
+CLIENT_ID = "Iv23liftwY1oI5k4FzuF"
+INSTALLATION_ID = "64597616"
