@@ -2,7 +2,7 @@ use aes_gcm::aead::{Aead, OsRng};
 use aes_gcm::{AeadCore, Aes256Gcm, Key, KeyInit, Nonce};
 use base64::Engine;
 use jwt_simple::prelude::{Claims, Clock, Duration, RS256KeyPair, RSAKeyPairLike};
-use reqwest::header::USER_AGENT;
+use reqwest::header::{ACCEPT, USER_AGENT};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -17,6 +17,7 @@ const LOGIN_URL: &str = r"https://github.com/login/oauth/access_token";
 const USER_URL: &str = r"https://api.github.com/user";
 const TOKEN_URL: &str = r"https://api.github.com/app/installations/{}/access_tokens";
 const GRAPHQL_URL: &str = r"https://api.github.com/graphql";
+const OAUTH_URL: &str = r"https://api.github.com/applications/{}/token";
 
 const STRUCTURES_QUERY: &str = r#"query($size: Int!, $cursor: String) { repository(owner: "destruMC", name: "repo") { discussions(categoryId: "DIC_kwDOObsL9c4CpOgI", first: $size, after: $cursor) { nodes { number title body author { login avatarUrl } } pageInfo { hasNextPage endCursor } } } }"#;
 const STRUCTURE_QUERY: &str = r#"query($number: Int!) { repository(owner: "destruMC", name: "repo") { discussion(number: $number) { title body author { login avatarUrl } } } }"#;
@@ -383,7 +384,7 @@ async fn fetch(
                     "grant_type": "refresh_token",
                     "refresh_token": refresh_token,
                 }))
-                .header("Accept", "application/vnd.github+json")
+                .header(ACCEPT, "application/vnd.github+json")
                 .send()
                 .await
             {
@@ -470,6 +471,78 @@ async fn fetch(
                     token: refresh_token,
                     expires: refresh_token_expires_in,
                 }).unwrap())
+        })
+        .get_async("/logout",  |req, ctx| async move {
+            let client_id = ctx.env.var("CLIENT_ID")?.to_string();
+            let client_secret = ctx.env.secret("CLIENT_SECRET")?.to_string();
+            let key = ctx.env.secret("KEY")?.to_string();
+
+            let token = match req
+                .url()
+                .unwrap()
+                .query_pairs()
+                .find(|(key, _)| key == "token")
+                .map(|(_, value)| value.to_string())
+            {
+                Some(value) => value,
+                None => return Ok(ResponseBuilder::new().with_status(401).empty()),
+            };
+
+            let refresh_token = decrypt(&*key, &*token).unwrap_or("".to_string());
+
+            let client = Client::new();
+
+            let login_response = match client
+                .post(LOGIN_URL)
+                .json(&json!({
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "grant_type": "refresh_token",
+                    "refresh_token": refresh_token,
+                }))
+                .header(ACCEPT, "application/vnd.github+json")
+                .send()
+                .await
+            {
+                Ok(response) => response,
+                Err(_) => return Ok(ResponseBuilder::new().with_status(500).empty()),
+            };
+
+            let login_data: serde_json::Value = match login_response
+                .json()
+                .await
+            {
+                Ok(response) => response,
+                Err(_) => return Ok(ResponseBuilder::new().with_status(500).empty()),
+            };
+
+            let access_token = match login_data["access_token"]
+                .as_str()
+            {
+                Some(value) => value,
+                None => return Ok(ResponseBuilder::new().with_status(500).empty()),
+            };
+
+            let oauth_response = match client
+                .delete(OAUTH_URL)
+                .header(ACCEPT, "application/vnd.github+json")
+                .header(USER_AGENT, "destru")
+                .basic_auth(client_id, Some(client_secret))
+                .json(&json!({
+                    "access_token": access_token,
+                }))
+                .send()
+                .await
+            {
+                Ok(response) => response,
+                Err(_) => return Ok(ResponseBuilder::new().with_status(500).empty()),
+            };
+
+            return if oauth_response.status() == 204 {
+                Response::empty()
+            } else {
+                Ok(ResponseBuilder::new().with_status(500).empty())
+            };
         })
         .run(req, env)
         .await?;
